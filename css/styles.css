@@ -517,3 +517,60 @@ body {
     height: 200px;
   }
 }
+
+/* Estilo para el banner de instalación PWA */
+.install-banner {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 30; /* Asegura que esté por encima de otros elementos */
+    transition: transform 0.3s ease-in-out;
+    transform: translateY(100%); /* Oculto por defecto */
+}
+
+.install-banner.visible {
+    transform: translateY(0); /* Muestra el banner */
+}
+
+.install-banner-text {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.install-banner-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.install-banner-buttons button {
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: 1px solid #fff;
+    background: transparent;
+    color: #fff;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.install-banner-buttons button:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.install-banner-buttons .install-btn {
+    background-color: var(--accent-color);
+    color: var(--primary-color);
+    border-color: var(--accent-color);
+}
+
+@media (min-width: 768px) {
+    /* La regla de product-grid se eliminó aquí ya que ahora se define globalmente */
+}
