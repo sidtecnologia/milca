@@ -570,7 +570,3 @@ body {
     color: var(--primary-color);
     border-color: var(--accent-color);
 }
-
-@media (min-width: 768px) {
-    /* La regla de product-grid se eliminó aquí ya que ahora se define globalmente */
-}
