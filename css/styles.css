@@ -545,12 +545,12 @@ body {
     font-weight: 500;
 }
 
-.install-banner-buttons {
+.install-banner-button {
     display: flex;
     gap: 10px;
 }
 
-.install-banner-buttons button {
+.install-banner-button button {
     padding: 8px 15px;
     border-radius: 5px;
     border: 1px solid #fff;
@@ -561,11 +561,11 @@ body {
     transition: background-color 0.2s;
 }
 
-.install-banner-buttons button:hover {
+.install-banner-button button:hover {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
-.install-banner-buttons .install-btn {
+.install-banner-button .install-btn {
     background-color: var(--accent-color);
     color: var(--primary-color);
     border-color: var(--accent-color);
