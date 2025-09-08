@@ -531,7 +531,7 @@ body {
     justify-content: space-between;
     align-items: center;
     box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
-    z-index: 30; /* Asegura que esté por encima de otros elementos */
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
     transition: transform 0.3s ease-in-out;
     transform: translateY(100%); /* Oculto por defecto */
 }
