@@ -1,11 +1,6 @@
-const CACHE_NAME = 'elegance-cache-v1';
+const CACHE_NAME = 'milca-cache-v1';
 const urlsToCache = [
     '/',
-    '/index.html',
-    '/css/styles.css',
-    '/js/app.js',
-    '/js/data.js',
-    '/favicon.png',
 ];
 
 self.addEventListener('install', event => {

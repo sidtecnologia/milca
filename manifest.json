@@ -1,6 +1,6 @@
 {
-  "short_name": "",
-  "name": "ELEGANCE",
+  "short_name": "Supermercado MILCA",
+  "name": "MILCA",
   "icons": [
     {
       "src": "img/favicon.png",
@@ -15,6 +15,6 @@
   ],
   "start_url": "/index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#8d8d8d"
+  "background_color": "#fff",
+  "theme_color": "#fff"
 }
