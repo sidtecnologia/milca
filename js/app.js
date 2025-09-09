@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const cartTotalElement = document.getElementById('cart-total');
   const checkoutBtn = document.getElementById('checkout-btn');
 
-  // nuevo modal de checkout
+  // modal checkout
   const checkoutModal = document.getElementById('checkoutModal');
   const customerNameInput = document.getElementById('customer-name');
   const customerAddressInput = document.getElementById('customer-address');
@@ -91,7 +91,6 @@ document.addEventListener('DOMContentLoaded', () => {
       bannerInterval = setInterval(nextBanner, 4000);
     }
 
-    // swipe
     let startX = 0;
     bannerCarousel.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
     bannerCarousel.addEventListener('touchend', e => {
@@ -106,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // mouse drag
     let isDown = false, startXMouse;
     bannerCarousel.addEventListener('mousedown', e => { isDown = true; startXMouse = e.pageX; });
     bannerCarousel.addEventListener('mouseup', e => {
@@ -130,7 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   const generateProductCard = (p) => `
     <div class="product-card" data-product-id="${p.id}">
-      <img src="${p.image[0]}" alt="${p.name}" class="product-image modal-trigger" data-id="${p.id}" />
+      <img src="${p.image[0]}" alt="${p.name}" class="product-image modal-trigger" data-id="${p.id}" loading="lazy" />
       <div class="product-info">
         <div>
           <div class="product-name">${p.name}</div>
@@ -143,15 +141,60 @@ document.addEventListener('DOMContentLoaded', () => {
     </div>
   `;
 
-  const renderProducts = (container, products) => {
-    container.innerHTML = '';
-    if (!products || products.length === 0) {
-      noProductsMessage.style.display = 'block';
-      return;
-    }
-    noProductsMessage.style.display = 'none';
-    products.forEach(p => container.innerHTML += generateProductCard(p));
-  };
+  // --- render con paginación ---
+  function renderProducts(container, products, page = 1, perPage = 20, withPagination = false) {
+  container.innerHTML = '';
+
+  if (!products || products.length === 0) {
+    noProductsMessage.style.display = 'block';
+    return;
+  }
+  noProductsMessage.style.display = 'none';
+
+  const totalPages = Math.ceil(products.length / perPage);
+  const start = (page - 1) * perPage;
+  const end = start + perPage;
+  const currentProducts = products.slice(start, end);
+
+  currentProducts.forEach(p => container.innerHTML += generateProductCard(p));
+
+  // renderizar paginación fuera del grid
+  if (withPagination && totalPages > 1) {
+    renderPagination(page, totalPages, products, perPage);
+  } else {
+    document.getElementById('pagination-container').innerHTML = '';
+  }
+}
+
+function renderPagination(currentPage, totalPages, products, perPage) {
+  const paginationContainer = document.getElementById('pagination-container');
+  paginationContainer.innerHTML = '';
+
+  function createBtn(label, page, active=false) {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.className = 'pagination-btn';
+    if (active) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      renderProducts(allFilteredContainer, products, page, perPage, true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    return btn;
+  }
+
+  if (currentPage > 1) paginationContainer.appendChild(createBtn('Primera', 1));
+  if (currentPage > 3) paginationContainer.appendChild(document.createTextNode('...'));
+
+  const start = Math.max(1, currentPage - 2);
+  const end = Math.min(totalPages, currentPage + 2);
+  for (let i = start; i <= end; i++) {
+    paginationContainer.appendChild(createBtn(i, i, i === currentPage));
+  }
+
+  if (currentPage < totalPages - 2) paginationContainer.appendChild(document.createTextNode('...'));
+  if (currentPage < totalPages) paginationContainer.appendChild(createBtn('Última', totalPages));
+}
+
 
   const generateCategoryCarousel = () => {
     categoryCarousel.innerHTML = '';
@@ -182,15 +225,19 @@ document.addEventListener('DOMContentLoaded', () => {
     featuredSection.style.display = 'none';
     offersSection.style.display = 'none';
     searchResultsTitle.textContent = `Resultados para "${q}"`;
-    renderProducts(allFilteredContainer, filtered);
+    renderProducts(allFilteredContainer, filtered, 1, 20, true);
   });
 
   const showDefaultSections = () => {
     featuredSection.style.display = 'block';
     offersSection.style.display = 'block';
     filteredSection.style.display = 'none';
-    renderProducts(featuredContainer, productData.filter(p => p.featured));
-    renderProducts(offersGrid, productData.filter(p => p.isOffer));
+
+    const featured = productData.filter(p => p.featured).slice(0, 25);
+    const offers = productData.filter(p => p.isOffer).slice(0, 25);
+
+    renderProducts(featuredContainer, featured, 1, 25, false);
+    renderProducts(offersGrid, offers, 1, 25, false);
   };
 
   // --- categorías click ---
@@ -205,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
     featuredSection.style.display = 'none';
     offersSection.style.display = 'none';
     searchResultsTitle.textContent = cat;
-    renderProducts(allFilteredContainer, filtered);
+    renderProducts(allFilteredContainer, filtered, 1, 20, true);
   });
 
   // --- draggable categorías ---
@@ -349,16 +396,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   productModal.addEventListener('click', (e) => { if (!e.target.closest('.modal-card')) closeModal(productModal); });
   cartModal.addEventListener('click', (e) => {
-  // Ignorar clicks en botones dentro del carrito
-  if (e.target.closest('.qty-btn')) return;
-  if (e.target.closest('#checkout-btn')) return;
-
-  // Cerrar solo si se clickea fuera de la tarjeta
-  if (!e.target.closest('.cart-modal-card')) {
-    closeModal(cartModal);
-  }
-});
-
+    if (e.target.closest('.qty-btn')) return;
+    if (e.target.closest('#checkout-btn')) return;
+    if (!e.target.closest('.cart-modal-card')) closeModal(cartModal);
+  });
 
   document.querySelectorAll('.close-button').forEach(btn => btn.addEventListener('click', () => closeModal(productModal)));
   document.querySelectorAll('.close-cart-btn').forEach(btn => btn.addEventListener('click', () => closeModal(cartModal)));
@@ -376,14 +417,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!name || !address) { alert('Por favor completa nombre y dirección'); return; }
 
     const whatsappNumber = '573104650255';
-    let message = `Hola, soy ${encodeURIComponent(name)}.%0AQuisiera hacer el siguiente pedido:%0A%0A`;
+    let message = `Hola, soy ${encodeURIComponent(name)}.%0AQuiero hacer este pedido para entregar en: ${encodeURIComponent(address)}%0A%0A`;
     let total = 0;
     cart.forEach(item => {
       message += `- ${encodeURIComponent(item.name)} x${item.qty} = $${money(item.price * item.qty)}%0A`;
       total += item.price * item.qty;
     });
-    message += `%0ATotal: $${money(total)}%0A`;
-    message += `. Dirección de entrega: ${encodeURIComponent(address)}`;
+    message += `%0ATotal:%20$${money(total)}`;
 
     const link = `https://wa.me/${whatsappNumber}?text=${message}`;
     window.open(link, '_blank');
@@ -391,13 +431,12 @@ document.addEventListener('DOMContentLoaded', () => {
     closeModal(cartModal);
   });
 
-  // --- install prompt (PWA) ---
+  // --- PWA install ---
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
     installBanner.classList.add('visible');
   });
-
   installPromptBtn && installPromptBtn.addEventListener('click', async () => {
     if (!deferredPrompt) return;
     installBanner.classList.remove('visible');
@@ -405,17 +444,10 @@ document.addEventListener('DOMContentLoaded', () => {
     await deferredPrompt.userChoice;
     deferredPrompt = null;
   });
-
   installCloseBtn && installCloseBtn.addEventListener('click', () => installBanner.classList.remove('visible'));
 
-  // Ocultar banner si ya está instalada
-  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-    if (installBanner) installBanner.style.display = 'none';
-  }
-
   // --- init ---
-  renderProducts(featuredContainer, productData.filter(p => p.featured));
-  renderProducts(offersGrid, productData.filter(p => p.isOffer));
+  showDefaultSections();
   generateCategoryCarousel();
   updateCart();
 });
