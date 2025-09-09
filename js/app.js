@@ -200,7 +200,7 @@ function renderPagination(currentPage, totalPages, products, perPage) {
     categoryCarousel.innerHTML = '';
     const allItem = document.createElement('div');
     allItem.className = 'category-item';
-    allItem.innerHTML = `<img class="category-image" src="img/icons/all.webp" alt="Todas" data-category="__all"><span class="category-name">Todas</span>`;
+    allItem.innerHTML = `<img class="category-image" src="img/icons/all.webp" alt="Todo" data-category="__all"><span class="category-name">Todo</span>`;
     categoryCarousel.appendChild(allItem);
 
     categories.forEach(c => {
