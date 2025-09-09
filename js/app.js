@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-  // DOM refs
+  // --- DOM refs ---
   const featuredContainer = document.getElementById('featured-grid');
   const offersGrid = document.getElementById('offers-grid');
   const allFilteredContainer = document.getElementById('all-filtered-products');
@@ -32,118 +32,116 @@ document.addEventListener('DOMContentLoaded', () => {
   const cartTotalElement = document.getElementById('cart-total');
   const checkoutBtn = document.getElementById('checkout-btn');
 
+  // nuevo modal de checkout
+  const checkoutModal = document.getElementById('checkoutModal');
+  const customerNameInput = document.getElementById('customer-name');
+  const customerAddressInput = document.getElementById('customer-address');
+  const finalizeBtn = document.getElementById('finalize-btn');
+
+  // install banner
   const installBanner = document.getElementById('install-banner');
   const installCloseBtn = document.getElementById('install-close-btn');
   const installPromptBtn = document.getElementById('install-prompt-btn');
 
-  // state
+  // --- state ---
   let cart = [];
   let currentImageIndex = 0;
   let currentProduct = null;
   let deferredPrompt = null;
 
-  // ---------- Banner Carousel ----------
-const bannerCarousel = document.getElementById('banner-carousel');
-const bannerDots = document.getElementById('banner-dots');
-const slides = document.querySelectorAll('.banner-slide');
-let currentBanner = 0;
-let bannerInterval;
-
-// Crear dots de navegación
-slides.forEach((_, idx) => {
-  const dot = document.createElement('div');
-  dot.classList.add('banner-dot');
-  if (idx === 0) dot.classList.add('active');
-  dot.addEventListener('click', () => goToSlide(idx));
-  bannerDots.appendChild(dot);
-});
-
-function updateBanner() {
-  bannerCarousel.style.transform = `translateX(-${currentBanner * 100}%)`;
-  document.querySelectorAll('.banner-dot').forEach((dot, idx) => {
-    dot.classList.toggle('active', idx === currentBanner);
-  });
-}
-
-function goToSlide(idx) {
-  currentBanner = idx;
-  updateBanner();
-  resetInterval();
-}
-
-function nextBanner() {
-  currentBanner = (currentBanner + 1) % slides.length;
-  updateBanner();
-}
-
-function resetInterval() {
-  clearInterval(bannerInterval);
-  bannerInterval = setInterval(nextBanner, 4000); // cada 4s
-}
-
-// touch swipe
-let startX = 0;
-bannerCarousel.addEventListener('touchstart', e => {
-  startX = e.touches[0].clientX;
-});
-bannerCarousel.addEventListener('touchend', e => {
-  let endX = e.changedTouches[0].clientX;
-  if (endX - startX > 50) {
-    // swipe derecha
-    currentBanner = (currentBanner - 1 + slides.length) % slides.length;
-    updateBanner();
-    resetInterval();
-  } else if (startX - endX > 50) {
-    // swipe izquierda
-    nextBanner();
-    resetInterval();
-  }
-});
-
-// mouse drag opcional
-let isDown = false, startXMouse;
-bannerCarousel.addEventListener('mousedown', e => {
-  isDown = true;
-  startXMouse = e.pageX;
-});
-bannerCarousel.addEventListener('mouseup', e => {
-  if (!isDown) return;
-  let diff = e.pageX - startXMouse;
-  if (diff > 50) {
-    currentBanner = (currentBanner - 1 + slides.length) % slides.length;
-    updateBanner();
-  } else if (diff < -50) {
-    nextBanner();
-  }
-  isDown = false;
-  resetInterval();
-});
-
-resetInterval(); // iniciar auto
-
-
-  // categories (derivado de productData)
-  const categories = Array.from(new Set(productData.map(p => p.category))).map(c => ({ label: c }));
-
-  // helpers
+  // --- helpers ---
   const money = (v) => Number(v).toFixed(3);
 
-  const generateProductCard = (p) => {
-    return `
-      <div class="product-card" data-product-id="${p.id}">
-        <img src="${p.image[0]}" alt="${p.name}" class="product-image modal-trigger" data-id="${p.id}" />
-        <div class="product-info">
-          <div>
-            <div class="product-name">${p.name}</div>
-            <div class="product-description">${p.description}</div>
-          </div>
-          <div style="margin-top:8px">
-            <div class="product-price">$${money(p.price)}</div>
-          </div>
+  // --- Banner Carousel ---
+  const bannerCarousel = document.getElementById('banner-carousel');
+  const bannerDots = document.getElementById('banner-dots');
+  if (bannerCarousel) {
+    const slides = document.querySelectorAll('.banner-slide');
+    let currentBanner = 0;
+    let bannerInterval;
+
+    slides.forEach((_, idx) => {
+      const dot = document.createElement('div');
+      dot.classList.add('banner-dot');
+      if (idx === 0) dot.classList.add('active');
+      dot.addEventListener('click', () => goToSlide(idx));
+      bannerDots.appendChild(dot);
+    });
+
+    function updateBanner() {
+      bannerCarousel.style.transform = `translateX(-${currentBanner * 100}%)`;
+      document.querySelectorAll('.banner-dot').forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === currentBanner);
+      });
+    }
+
+    function goToSlide(idx) {
+      currentBanner = idx;
+      updateBanner();
+      resetInterval();
+    }
+
+    function nextBanner() {
+      currentBanner = (currentBanner + 1) % slides.length;
+      updateBanner();
+    }
+
+    function resetInterval() {
+      clearInterval(bannerInterval);
+      bannerInterval = setInterval(nextBanner, 4000);
+    }
+
+    // swipe
+    let startX = 0;
+    bannerCarousel.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
+    bannerCarousel.addEventListener('touchend', e => {
+      let endX = e.changedTouches[0].clientX;
+      if (endX - startX > 50) {
+        currentBanner = (currentBanner - 1 + slides.length) % slides.length;
+        updateBanner();
+        resetInterval();
+      } else if (startX - endX > 50) {
+        nextBanner();
+        resetInterval();
+      }
+    });
+
+    // mouse drag
+    let isDown = false, startXMouse;
+    bannerCarousel.addEventListener('mousedown', e => { isDown = true; startXMouse = e.pageX; });
+    bannerCarousel.addEventListener('mouseup', e => {
+      if (!isDown) return;
+      let diff = e.pageX - startXMouse;
+      if (diff > 50) {
+        currentBanner = (currentBanner - 1 + slides.length) % slides.length;
+        updateBanner();
+      } else if (diff < -50) {
+        nextBanner();
+      }
+      isDown = false;
+      resetInterval();
+    });
+
+    resetInterval();
+  }
+
+  // --- Categorías ---
+  const categories = Array.from(new Set(productData.map(p => p.category))).map(c => ({ label: c }));
+
+  const generateProductCard = (p) => `
+    <div class="product-card" data-product-id="${p.id}">
+      <img src="${p.image[0]}" alt="${p.name}" class="product-image modal-trigger" data-id="${p.id}" />
+      <div class="product-info">
+        <div>
+          <div class="product-name">${p.name}</div>
+          <div class="product-description">${p.description}</div>
+        </div>
+        <div style="margin-top:8px">
+          <div class="product-price">$${money(p.price)}</div>
         </div>
       </div>
-    `;
-  };
+    </div>
+  `;
 
   const renderProducts = (container, products) => {
     container.innerHTML = '';
@@ -157,7 +155,6 @@ resetInterval(); // iniciar auto
 
   const generateCategoryCarousel = () => {
     categoryCarousel.innerHTML = '';
-    // Añadir una opción 'Todas'
     const allItem = document.createElement('div');
     allItem.className = 'category-item';
     allItem.innerHTML = `<img class="category-image" src="img/icons/all.webp" alt="Todas" data-category="__all"><span class="category-name">Todas</span>`;
@@ -166,20 +163,16 @@ resetInterval(); // iniciar auto
     categories.forEach(c => {
       const el = document.createElement('div');
       el.className = 'category-item';
-      // imagen genérica por categoría si no hay assets
       const fileName = `img/icons/${c.label.toLowerCase().replace(/\s+/g,'_')}.webp`;
       el.innerHTML = `<img class="category-image" src="${fileName}" alt="${c.label}" data-category="${c.label}"><span class="category-name">${c.label}</span>`;
       categoryCarousel.appendChild(el);
     });
   };
 
-  // buscador
+  // --- buscador ---
   searchInput.addEventListener('input', (e) => {
     const q = e.target.value.trim().toLowerCase();
-    if (!q) {
-      showDefaultSections();
-      return;
-    }
+    if (!q) { showDefaultSections(); return; }
     const filtered = productData.filter(p =>
       p.name.toLowerCase().includes(q) ||
       p.description.toLowerCase().includes(q) ||
@@ -200,16 +193,13 @@ resetInterval(); // iniciar auto
     renderProducts(offersGrid, productData.filter(p => p.isOffer));
   };
 
-  // manejo de categorías (evento delegado)
+  // --- categorías click ---
   categoryCarousel.addEventListener('click', (ev) => {
     const img = ev.target.closest('.category-image');
     if (!img) return;
     const cat = img.dataset.category;
     searchInput.value = '';
-    if (cat === '__all') {
-      showDefaultSections();
-      return;
-    }
+    if (cat === '__all') { showDefaultSections(); return; }
     const filtered = productData.filter(p => p.category.toLowerCase() === cat.toLowerCase());
     filteredSection.style.display = 'block';
     featuredSection.style.display = 'none';
@@ -218,7 +208,7 @@ resetInterval(); // iniciar auto
     renderProducts(allFilteredContainer, filtered);
   });
 
-  // draggable carousel (mouse + touch)
+  // --- draggable categorías ---
   (function makeCarouselDraggable(){
     let isDown=false,startX,scrollLeft;
     categoryCarousel.addEventListener('mousedown', (e)=>{
@@ -226,34 +216,29 @@ resetInterval(); // iniciar auto
     });
     window.addEventListener('mouseup', ()=>{isDown=false;categoryCarousel.classList.remove('grabbing')});
     categoryCarousel.addEventListener('mousemove', (e)=>{ if(!isDown) return; e.preventDefault(); const x=e.pageX-categoryCarousel.offsetLeft; const walk=(x-startX)*1.5; categoryCarousel.scrollLeft = scrollLeft - walk;});
-    // touch
     categoryCarousel.addEventListener('touchstart',(e)=>{ startX = e.touches[0].pageX - categoryCarousel.offsetLeft; scrollLeft = categoryCarousel.scrollLeft; });
     categoryCarousel.addEventListener('touchmove',(e)=>{ const x = e.touches[0].pageX - categoryCarousel.offsetLeft; const walk=(x-startX)*1.2; categoryCarousel.scrollLeft = scrollLeft - walk; });
   })();
 
-  // abrir modal producto
+  // --- modal producto ---
   document.addEventListener('click', (e) => {
-    // abrir modal cuando clic en imagen
     if (e.target.closest('.modal-trigger')) {
       const id = e.target.dataset.id;
       openProductModal(id);
       return;
     }
-
     if (e.target.id === 'modal-add-to-cart-btn') {
       const qty = Math.max(1, parseInt(qtyInput.value) || 1);
       addToCart(currentProduct.id, qty);
       closeModal(productModal);
       return;
     }
-
     if (e.target.classList.contains('close-button') || e.target.classList.contains('close-cart-btn')) {
       closeModal(productModal);
       closeModal(cartModal);
     }
   });
 
-  // abrir modal producto por id
   function openProductModal(id) {
     const product = productData.find(p => p.id === id);
     if (!product) return;
@@ -267,11 +252,10 @@ resetInterval(); // iniciar auto
     showModal(productModal);
   }
 
-  // modal helpers
   function showModal(modal) { modal.style.display = 'block'; modal.setAttribute('aria-hidden','false'); }
   function closeModal(modal) { modal.style.display = 'none'; modal.setAttribute('aria-hidden','true'); }
 
-  // carousel modal
+  // --- carousel modal ---
   function updateCarousel(images){
     carouselImagesContainer.innerHTML = '';
     if(!images || images.length===0){
@@ -288,26 +272,22 @@ resetInterval(); // iniciar auto
     carouselImagesContainer.style.transform = `translateX(0)`;
   }
 
-  prevBtn.addEventListener('click', () => {
-    if (currentImageIndex > 0) currentImageIndex--;
-    updateCarouselPosition();
-  });
+  prevBtn.addEventListener('click', () => { if (currentImageIndex > 0) currentImageIndex--; updateCarouselPosition(); });
   nextBtn.addEventListener('click', () => {
     const imgs = carouselImagesContainer.querySelectorAll('.carousel-image');
     if (currentImageIndex < imgs.length - 1) currentImageIndex++;
     updateCarouselPosition();
   });
+
   function updateCarouselPosition(){
-    const w = carouselImagesContainer.clientWidth;
     const imgs = carouselImagesContainer.querySelectorAll('.carousel-image');
     if (imgs.length === 0) return;
     const imgWidth = imgs[0].clientWidth || carouselImagesContainer.clientWidth;
     carouselImagesContainer.style.transform = `translateX(-${currentImageIndex * imgWidth}px)`;
   }
-  // responsive recompute on resize
   window.addEventListener('resize', updateCarouselPosition);
 
-  // carrito
+  // --- carrito ---
   function updateCart(){
     cartItemsContainer.innerHTML = '';
     if (cart.length === 0) {
@@ -317,27 +297,25 @@ resetInterval(); // iniciar auto
       cartTotalElement.textContent = money(0);
       return;
     }
-    let total = 0;
-    let totalItems = 0;
+    let total = 0, totalItems = 0;
     cart.forEach((item, idx) => {
       total += item.price * item.qty;
       totalItems += item.qty;
       const div = document.createElement('div');
       div.className = 'cart-item';
       div.innerHTML = `
-  <div style="display:flex;align-items:center;gap:8px;">
-    <img src="${item.image}" alt="${item.name}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;">
-    <div>
-      <strong>${item.name}</strong>
-      <div style="font-size:.9rem;color:#666">${item.qty} x $${money(item.price)}</div>
-    </div>
-  </div>
-  <div class="controls">
-    <button class="qty-btn" data-idx="${idx}" data-op="dec">-</button>
-    <button class="qty-btn" data-idx="${idx}" data-op="inc">+</button>
-  </div>
-`;
-
+        <div style="display:flex;align-items:center;gap:8px;">
+          <img src="${item.image}" alt="${item.name}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;">
+          <div>
+            <strong>${item.name}</strong>
+            <div style="font-size:.9rem;color:#666">${item.qty} x $${money(item.price)}</div>
+          </div>
+        </div>
+        <div class="controls">
+          <button class="qty-btn" data-idx="${idx}" data-op="dec">-</button>
+          <button class="qty-btn" data-idx="${idx}" data-op="inc">+</button>
+        </div>
+      `;
       cartItemsContainer.appendChild(div);
     });
     cartBadge.style.display = 'flex';
@@ -345,7 +323,6 @@ resetInterval(); // iniciar auto
     cartTotalElement.textContent = money(total);
   }
 
-  // add to cart
   function addToCart(id, qty=1){
     const p = productData.find(x => x.id === id);
     if (!p) return;
@@ -355,7 +332,6 @@ resetInterval(); // iniciar auto
     updateCart();
   }
 
-  // cart controls (increment/decrement)
   cartItemsContainer.addEventListener('click', (e) => {
     const btn = e.target.closest('button[data-idx]');
     if (!btn) return;
@@ -369,147 +345,77 @@ resetInterval(); // iniciar auto
     updateCart();
   });
 
-  // abrir carrito
-  cartBtn.addEventListener('click', () => {
-    showModal(cartModal);
-    updateCart();
-  });
+  cartBtn.addEventListener('click', () => { showModal(cartModal); updateCart(); });
 
-productModal.addEventListener('click', (e) => {
-  // si el click no está dentro de la tarjeta (.modal-card) se cierra
-  if (!e.target.closest('.modal-card')) closeModal(productModal);
+  productModal.addEventListener('click', (e) => { if (!e.target.closest('.modal-card')) closeModal(productModal); });
+  cartModal.addEventListener('click', (e) => {
+  // Ignorar clicks en botones dentro del carrito
+  if (e.target.closest('.qty-btn')) return;
+  if (e.target.closest('#checkout-btn')) return;
+
+  // Cerrar solo si se clickea fuera de la tarjeta
+  if (!e.target.closest('.cart-modal-card')) {
+    closeModal(cartModal);
+  }
 });
 
-cartModal.addEventListener('click', (e) => {
-  // si el click no está dentro de la tarjeta del carrito (.cart-modal-card) se cierra
-  if (!e.target.closest('.cart-modal-card')) closeModal(cartModal);
-});
 
-// cerrar con los botones X (asegura que existan listeners directos)
-document.querySelectorAll('.close-button').forEach(btn =>
-  btn.addEventListener('click', () => closeModal(productModal))
-);
-document.querySelectorAll('.close-cart-btn').forEach(btn =>
-  btn.addEventListener('click', () => closeModal(cartModal))
-);
+  document.querySelectorAll('.close-button').forEach(btn => btn.addEventListener('click', () => closeModal(productModal)));
+  document.querySelectorAll('.close-cart-btn').forEach(btn => btn.addEventListener('click', () => closeModal(cartModal)));
+  document.querySelectorAll('.close-checkout-btn').forEach(btn => btn.addEventListener('click', () => closeModal(checkoutModal)));
 
-  // checkout -> whatsapp
+  // --- checkout ---
   checkoutBtn.addEventListener('click', () => {
     if (cart.length === 0) { alert('El carrito está vacío'); return; }
-    const whatsappNumber = '573104650255'; // reemplaza por tu número sin signos ni espacios
-    let message = 'Hola,%20quisiera%20hacer%20el%20siguiente%20pedido:%0A%0A';
+    showModal(checkoutModal);
+  });
+
+  finalizeBtn.addEventListener('click', () => {
+    const name = customerNameInput.value.trim();
+    const address = customerAddressInput.value.trim();
+    if (!name || !address) { alert('Por favor completa nombre y dirección'); return; }
+
+    const whatsappNumber = '573104650255';
+    let message = `Hola, soy ${encodeURIComponent(name)}.%0AQuisiera hacer el siguiente pedido:%0A%0A`;
     let total = 0;
     cart.forEach(item => {
       message += `- ${encodeURIComponent(item.name)} x${item.qty} = $${money(item.price * item.qty)}%0A`;
       total += item.price * item.qty;
     });
-    message += `%0ATotal:%20$${money(total)}`;
+    message += `%0ATotal: $${money(total)}%0A`;
+    message += `. Dirección de entrega: ${encodeURIComponent(address)}`;
+
     const link = `https://wa.me/${whatsappNumber}?text=${message}`;
     window.open(link, '_blank');
+    closeModal(checkoutModal);
+    closeModal(cartModal);
   });
 
-  // install prompt (PWA)
+  // --- install prompt (PWA) ---
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-    installBanner.hidden = false;
+    installBanner.classList.add('visible');
   });
+
   installPromptBtn && installPromptBtn.addEventListener('click', async () => {
     if (!deferredPrompt) return;
-    installBanner.hidden = true;
+    installBanner.classList.remove('visible');
     deferredPrompt.prompt();
-    const choice = await deferredPrompt.userChoice;
+    await deferredPrompt.userChoice;
     deferredPrompt = null;
   });
-  installCloseBtn && installCloseBtn.addEventListener('click', () => installBanner.hidden = true);
 
-  // init
+  installCloseBtn && installCloseBtn.addEventListener('click', () => installBanner.classList.remove('visible'));
+
+  // Ocultar banner si ya está instalada
+  if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+    if (installBanner) installBanner.style.display = 'none';
+  }
+
+  // --- init ---
   renderProducts(featuredContainer, productData.filter(p => p.featured));
   renderProducts(offersGrid, productData.filter(p => p.isOffer));
   generateCategoryCarousel();
   updateCart();
-});
-
-// --- Lógica de Banner de Instalación para PWA ---
-const installBanner = document.getElementById('install-banner');
-const installCloseBtn = document.getElementById('install-close-btn');
-const installPromptBtn = document.getElementById('install-prompt-btn');
-let deferredPrompt; // Variable para almacenar el evento de instalación
-
-window.addEventListener('beforeinstallprompt', (e) => {
-    // Evita que el navegador muestre su propio mensaje de instalación
-    e.preventDefault();
-    // Almacena el evento para poder dispararlo más tarde
-    deferredPrompt = e;
-    // Muestra el banner de instalación personalizado
-    installBanner.classList.add('visible');
-});
-
-installPromptBtn.addEventListener('click', (e) => {
-    if (deferredPrompt) {
-        // Oculta el banner
-        installBanner.classList.remove('visible');
-        // Muestra el mensaje de instalación del navegador
-        deferredPrompt.prompt();
-        // Resetea la variable
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('El usuario aceptó la instalación de la PWA');
-            } else {
-                console.log('El usuario rechazó la instalación de la PWA');
-            }
-            deferredPrompt = null;
-        });
-    }
-});
-
-installCloseBtn.addEventListener('click', () => {
-    installBanner.classList.remove('visible');
-});
-
-// Asegúrate de que este bloque de código está dentro del listener DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-    // ... todas tus variables y funciones...
-    
-    // Pega el bloque de código de la PWA aquí
-    const installBanner = document.getElementById('install-banner');
-    const installCloseBtn = document.getElementById('install-close-btn');
-    const installPromptBtn = document.getElementById('install-prompt-btn');
-    let deferredPrompt; 
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        installBanner.classList.add('visible');
-    });
-
-    installPromptBtn.addEventListener('click', (e) => {
-        if (deferredPrompt) {
-            installBanner.classList.remove('visible');
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choiceResult) => {
-                if (choiceResult.outcome === 'accepted') {
-                    console.log('El usuario aceptó la instalación de la PWA');
-                } else {
-                    console.log('El usuario rechazó la instalación de la PWA');
-                }
-                deferredPrompt = null;
-            });
-        }
-    });
-
-    installCloseBtn.addEventListener('click', () => {
-        installBanner.classList.remove('visible');
-    });
-    // Detectar si ya está instalada la PWA
-window.addEventListener('DOMContentLoaded', () => {
-    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-        // Oculta el banner si ya está instalada
-        const installBanner = document.getElementById('install-banner');
-        if (installBanner) {
-            installBanner.style.display = 'none';
-        }
-    }
-});
-
 });

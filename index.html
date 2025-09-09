@@ -16,7 +16,7 @@
         <header class="header-menu">
             <div class="header-content">
                 <h1 class="logo">MILCA</h1>
-                <p class="subtitle">Autoservicio de abarrotes,licores,productos frios y enlatados,aseo hogar,aseo personal,linea hogar... con los mejores precios</p>
+                <p class="subtitle">Autoservicio de abarrotes, licores, productos frios y enlatados, aseo hogar,aseo personal, linea hogar... con los mejores precios</p>
                 <div class="search-container">
                     <input id="search-input" type="search" placeholder="Buscar producto, marca o categoría..." />
                 </div>
@@ -105,6 +105,26 @@
                 </div>
             </div>
         </div>
+
+        <!-- Modal de datos de entrega -->
+<div id="checkoutModal" class="modal" aria-hidden="true">
+  <div class="modal-content-wrapper">
+    <div class="checkout-modal-card">
+      <button class="modal-close close-checkout-btn">&times;</button>
+      <h2>Datos de entrega</h2>
+      <div class="form-group">
+        <label for="customer-name">Nombre:</label>
+        <input type="text" id="customer-name" placeholder="Tu nombre" required>
+      </div>
+      <div class="form-group">
+        <label for="customer-address">Dirección:</label>
+        <input type="text" id="customer-address" placeholder="Tu dirección de entrega" required>
+      </div>
+      <button id="finalize-btn" class="checkout-btn">Finalizar</button>
+    </div>
+  </div>
+</div>
+
 
         <footer class="footer-menu">
             <p>&copy; <span id="year"></span> Todos los derechos reservados - Milca Supermercado</p>
