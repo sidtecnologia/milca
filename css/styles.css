@@ -443,6 +443,8 @@ body {
 
 .banner-dot.active {
   background: var(--accent);
+  width: 20px;
+  border-radius: 20px;
 }
 
 
