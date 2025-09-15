@@ -50,7 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
   let deferredPrompt = null;
 
   // --- helpers ---
-  const money = (v) => Number(v).toFixed(3);
+  const money = (v) => {
+    const value = Math.floor(v);
+    return value.toLocaleString('es-CO');
+};
 
   // --- Banner Carousel ---
   const bannerCarousel = document.getElementById('banner-carousel');
