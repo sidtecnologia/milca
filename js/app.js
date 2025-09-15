@@ -60,18 +60,31 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentBanner = 0;
     let bannerInterval;
 
+    // Duplicate the first and last slides for the infinite loop illusion
+    const firstSlideClone = slides[0].cloneNode(true);
+    const lastSlideClone = slides[slides.length - 1].cloneNode(true);
+    bannerCarousel.appendChild(firstSlideClone);
+    bannerCarousel.insertBefore(lastSlideClone, slides[0]);
+
+    // Initial position is now the first real slide, not the clone
+    currentBanner = 1;
+    bannerCarousel.style.transform = `translateX(-${currentBanner * 100}%)`;
+
     slides.forEach((_, idx) => {
       const dot = document.createElement('div');
       dot.classList.add('banner-dot');
       if (idx === 0) dot.classList.add('active');
-      dot.addEventListener('click', () => goToSlide(idx));
+      // Update dot logic to account for cloned slides
+      dot.addEventListener('click', () => goToSlide(idx + 1));
       bannerDots.appendChild(dot);
     });
 
     function updateBanner() {
       bannerCarousel.style.transform = `translateX(-${currentBanner * 100}%)`;
+      // Update dots based on the "real" slides
+      const dotIndex = (currentBanner - 1 + slides.length) % slides.length;
       document.querySelectorAll('.banner-dot').forEach((dot, idx) => {
-        dot.classList.toggle('active', idx === currentBanner);
+        dot.classList.toggle('active', idx === dotIndex);
       });
     }
 
@@ -81,9 +94,22 @@ document.addEventListener('DOMContentLoaded', () => {
       resetInterval();
     }
 
+    // New logic for infinite loop
     function nextBanner() {
-      currentBanner = (currentBanner + 1) % slides.length;
+      currentBanner++;
       updateBanner();
+      // Wait for the transition to finish before "jumping"
+      if (currentBanner >= slides.length + 1) {
+        setTimeout(() => {
+          bannerCarousel.style.transition = 'none'; // Disable transition for the jump
+          currentBanner = 1;
+          bannerCarousel.style.transform = `translateX(-${currentBanner * 100}%)`;
+          // Re-enable transition after a brief moment
+          setTimeout(() => {
+            bannerCarousel.style.transition = 'transform 0.5s ease';
+          }, 50);
+        }, 500); // This duration should match the CSS transition time
+      }
     }
 
     function resetInterval() {
@@ -91,12 +117,13 @@ document.addEventListener('DOMContentLoaded', () => {
       bannerInterval = setInterval(nextBanner, 4000);
     }
 
+    // Add event listeners for the new cloned slides logic
     let startX = 0;
     bannerCarousel.addEventListener('touchstart', e => { startX = e.touches[0].clientX; });
     bannerCarousel.addEventListener('touchend', e => {
       let endX = e.changedTouches[0].clientX;
       if (endX - startX > 50) {
-        currentBanner = (currentBanner - 1 + slides.length) % slides.length;
+        currentBanner = (currentBanner - 1);
         updateBanner();
         resetInterval();
       } else if (startX - endX > 50) {
@@ -111,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!isDown) return;
       let diff = e.pageX - startXMouse;
       if (diff > 50) {
-        currentBanner = (currentBanner - 1 + slides.length) % slides.length;
+        currentBanner = (currentBanner - 1);
         updateBanner();
       } else if (diff < -50) {
         nextBanner();
@@ -120,6 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
       resetInterval();
     });
 
+    // Initial interval start
     resetInterval();
   }
 
