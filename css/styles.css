@@ -150,11 +150,30 @@ body {
   padding: 10px 0 20px;
 }
 
+/* Estilos para los títulos de las secciones */
 .section-title {
-  text-align: center;
-  color: var(--primary);
-  font-size: 1.2rem;
-  margin-bottom: 12px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--secondary);
+    padding: 10px 0;
+    margin: 20px 0;
+    text-align: center;
+    border-bottom: 2px solid var(--secondary);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(to right, rgba(255, 255, 255, 0), var(--primary) 50%, rgba(255, 255, 255, 0));
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.section-title .title-icon {
+    font-size: 1.2rem;
+    color: var(--primary);
+    -webkit-text-fill-color: var(--primary); /* Asegura que el ícono tenga color sólido */
 }
 
 .product-grid {
